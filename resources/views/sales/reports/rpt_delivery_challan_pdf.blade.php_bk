@@ -1,0 +1,168 @@
+<html>
+    <head>
+        <style>
+        body { margin: 0; font-size: 12px; font-family: "Arrial Narrow";}
+            /** Define the margins of your page **/
+            @page {
+                margin: 100px 55px;
+            }
+
+            header {
+                position: fixed;
+                top: -45px;
+                left: 0px;
+                right: 0px;
+                height: 50px;
+                /** Extra personal styles **/
+
+                color: white;
+                text-align: center;
+                line-height: 35px;
+            }
+
+            footer {
+                position: fixed;
+                bottom: -40px;
+                left: 0px;
+                right: 0px;
+                height: 90px;
+
+                text-align: center;
+            }
+
+            table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Define header and footer blocks before your content -->
+        <header>
+          <div class="row justify-content-center">
+            <div class="col-md-12">
+              <table class="table">
+                <tr><td width="25%"></td>
+                <td valign="middle" width="45%"><b><font size="7"></font></b><br/>
+                  Phone : 01313-772676<br/>
+                  Email: jistlifecare@gmail.com</td>
+                <td valign="middle" width="25%"><b><font size="6">DELIVERY CHALLAN</font></b></td></tr>
+              </table>
+            </div>
+          </div>
+        </header>
+
+        <footer>
+          <div class="row">
+            <div class="col-sm-12">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td width="33%">&nbsp;</td>
+                    <td width="34%">&nbsp;</td>
+                    <td width="33%">&nbsp;</td>
+                </tr>
+                <tr>
+                    <th scope="col" colspan="3"><h4>RECEIVED THE ABOVE WITH THANKS</h4></th>
+                </tr>
+
+                <tr>
+                    <td style="text-align:center">Signatue of Customer</td>
+                    <td>&nbsp;</td>
+                    <td style="text-align:center">Signatue of Authority</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+            <div class="row">
+              <div class="col-sm-6"></div>
+                <div class="col-sm-6">Contact No:<br/>
+                  Cell: +88-02-55-086938,39<br/>+88-02-09611699825<br/>+88-01313574348<br/></div>
+            </div>
+        </footer>
+        <!-- Wrap the content of your PDF inside a main tag -->
+        <main>
+            <p><br/><br/>
+              <div class="row justify-content-center">
+                <div class="col-md-12">
+                <table class="table table-bordered">
+                  <tr>
+                    <td width="70%"><dl id="dt-list-1" class="dl-horizontal">
+                        <dt><b>Customer Name&nbsp;&nbsp;&nbsp;:</b>&nbsp;{{ $rows_m->cust_name }}</dt>
+                        <dt><b>Customer Phone&nbsp;&nbsp;:</b>&nbsp;{{ $rows_m->cust_mobile }}</dt>
+                        <dt><b>Address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</b>&nbsp;{{ $rows_m->cust_add1 }}<br/>{{ $rows_m->cust_add2 }}</dt>
+                      </dl></td>
+                    <td width="30%" valign="top"><dl id="dt-list-1" class="dl-horizontal">
+                      <dt><b>Delivery Date&nbsp;&nbsp;:</b>&nbsp;{{ $rows_m->del_date }}</dt>
+                      <dt><b>Delivery No&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</b>&nbsp;{{ $rows_m->del_no }}</dt>
+                      <!-- dt><b>Sales Person:</b>&nbsp;{{ $rows_m->sales_name }}</dt -->
+                    </dl></td>
+                  </tr>
+                </table>
+                </div>
+            </div>
+            <br/>
+            <div class="container">
+              <div class="row justify-content-center">
+                <div class="row">
+                  <div class="col-sm-12">
+                    <table width="100%" border="1" cellspacing="1" cellpadding="1">
+                      <thead>
+                        <tr>
+                          <th>SL</th>
+                          <!-- th>Item&nbsp;Code</th -->
+                          <th>Item&nbsp;Name</th>
+                          <th>Unit</th>
+                          <th>Quantity</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <?php $i=0; $tot_qty = 0;?>
+                          @foreach($rows_d as $sale_details)
+                          <?php
+                            $tot_qty += $sale_details->del_qty;
+                          ?>
+                          <tr>
+                            <td align="center">{{ ++$i }}</td>
+                            <!-- td align="center">{{ $sale_details->item_code }}</td -->
+                            <td align="left">{{ $sale_details->item_name }}</td>
+                            <td align="center">{{ $sale_details->del_item_unit }}</td>
+                            <td align="center">{{ $sale_details->del_qty }}</td>
+                          </tr>
+                        @endforeach
+                        <tr>
+                          <td colspan="3" align="center"><b>Total:</b></td>
+                          <td align="center"><b>{{ number_format($tot_qty, 2) }}</b></td>
+                        </tr>
+
+                      </tbody>
+                    </table>
+                    </div>
+                 </div>
+                 <br />
+                 <div class="row">
+                   <div class="col-sm-12">
+                     <table width="100%" border="1" cellspacing="0" cellpadding="0">
+                       <thead>
+                       </thead>
+                       <tbody>
+                           <tr>
+                             <td>
+                               <dl id="dt-list-1" class="dl-horizontal">
+                                 <dt><b>Delivered To&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</b>&nbsp;{{ $rows_m->del_customer }}</dt>
+                                 <dt><b>Delivered Address&nbsp;&nbsp;&nbsp;:</b>&nbsp;{{ $rows_m->del_add }}</dt>
+                                 <dt><b>Delivered Contact&nbsp;&nbsp;&nbsp;&nbsp;:</b>&nbsp;{{ $rows_m->del_cont_no }}</dt>
+                                 <dt><b>Customer Refernce&nbsp;&nbsp;:</b>&nbsp;{{ $rows_m->del_cust_ref }}</dt>
+                               </dl>
+                             </td>
+                           </tr>
+                       </tbody>
+                     </table>
+                   </div>
+                 </div>
+
+                </div>
+            </div>
+            </p>
+        </main>
+    </body>
+</html>

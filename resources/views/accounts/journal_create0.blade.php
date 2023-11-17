@@ -1,0 +1,160 @@
+@extends('layouts.app')
+@section('css')
+    <link rel="stylesheet" href="{{ asset('assets/css/jquery-ui.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/blogic_css/acc_tb.css') }}" />
+@stop
+@section('content')
+<section class="content">
+<input type="hidden" name="menu_selection" id="menu_selection" value="ACC@1" class="form-control" required>
+  <div class="title"><legend><font size="2" color="blue"><b>Journal Voucher</b>
+  &nbsp;<a href="#"><i class="fa fa-list"></i> List</a></font>
+  </legend>
+
+    </div>
+  <form id="acc_Form" action="{{route('acctrans.jv.store')}}" method="post">
+    {{ csrf_field() }}
+    <input type="hidden" id="jv" name="jv" value="1" class="form-control"/>
+    <div class="container">
+      @if(Session::has('message'))
+       <p class="alert alert-success"><b>{{ Session::get('message') }}</b></p>
+      @endif
+
+         <div class="row">
+          <div class="col-md-4">
+               <div class="input-group">
+                 <div class="input-group-prepend">
+                     <div class="input-group-text" style="min-width:130px">Company:</div>
+                 </div>
+                    <select name="company_code" class="autocomplete" id="company_code"  style="max-width:150px" required>
+                    <option value="" >--Select--</option>
+                        @if ($companies->count())
+                            @foreach($companies as $company)
+                                <option {{ $company_code == $company->comp_id ? 'selected' : '' }} value="{{$company->comp_id}}" >{{ $company->comp_id }}-{{ $company->name }}</option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
+           </div>
+          <div class="col-md-4">
+              <div class="input-group">
+                  <div class="input-group-prepend">
+                      <div class="input-group-text" style="min-width:130px">Finacial Year:</div>
+                  </div>
+                  <input type="text" name="finan_year" value="{{ $finan_year }}" class="form-control" autocomplete="off" readonly />
+                </div>
+          </div>
+      </div>
+      <div class="row">
+           <div class="col-md-4">
+               <div class="input-group ss-item-required">
+                   <div class="input-group-prepend ">
+                       <div class="input-group-text" style="min-width:130px">Transaction Date:</div>
+                   </div>
+                   <input type="text" name="trans_date" value="{{ old('trans_date') == "" ? $trans_date : old('trans_date') }}" class="form-control date attendance" autocomplete="off" required/>
+              </div>
+           </div>
+           <div class="col-md-3">
+               <div class="input-group">
+                   <div class="input-group-prepend">
+                       <div class="input-group-text" style="min-width:130px">Last Voucher No:</div>
+                   </div>
+                   <input type="text" name="lastVoucher" value="{{$voucher_no}}" class="form-control" readonly required/>
+              </div>
+           </div>
+
+           <div class="col-md-3">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                      <div class="input-group-text" style="min-width:130px">Voucher Type:</div>
+                  </div>
+                     <select name="doc_type" class="autocomplete" style="max-width:150px" required readonly="true">
+                         @if ($accdoctype->count())
+                             @foreach($accdoctype as $dcombo)
+                                 <option {{ request()->get('doc_type') == $dcombo->doc_type ? 'selected' : '' }} value="{{ $dcombo->doc_type  }}" >{{ $dcombo->doc_type }}</option>
+                             @endforeach
+                         @endif
+                     </select>
+                 </div>
+            </div>
+       </div>
+       <div class="row">
+             <div class="col-md-10">
+                      <div class="input-group ss-item-required">
+                          <div class="input-group-prepend">
+                              <div class="input-group-text" style="min-width:130px">Narration:</div>
+                          </div>
+                          <textarea name="narration" rows="2" cols="300" class="form-control config" placeholder="Narration" maxlength="500" required></textarea>
+                      </div>
+              </div>
+        </div>
+
+     <div class="row justify-content-center">
+       <div class="col-md-12">
+        <table id="acc_table" class="table table-striped table-data table-report ">
+          <thead class="accTable">
+            <tr>
+              <th width="3%" class="text-center">Id</th>
+              <th width="2%" style="display: none" class="text-center">Account Id</th>
+              <th width="2%" style="display: none" class="text-center">Account Code</th>
+              <th width="15%" class="text-center">Head of Accounting</th>
+              <th width="25%" class="text-center">Description</th>
+              <th width="10%" class="text-center">Debit</th>
+              <th width="10%" class="text-center">Credit</th>
+              <th width="3%" class="text-center">&nbsp;</th>
+            </tr>
+          </thead>
+          <tbody class="accTable" style="background-color: #ffffff;">
+            <tr>
+              <td width="3%" class="text-center">1</td>
+              <td width="2%" style="display: none" ><input type="text" data-type="AccHeadCodeId" name="AccHeadCodeId[]" id="AccHeadCodeId_1" class="form-control item_id_class" autocomplete="off"></td>
+              <td width="2%" style="display: none" ><input type="text" data-type="AccHeadCode" name="AccHeadCode[]" id="AccHeadCode_1" class="form-control" autocomplete="off"></td>
+              <td width="15%"><input type="text" data-type="AccHead" name="AccHead[]" onkeydown="toggleQuantity(this.id, event)" id="AccHead_1" class="form-control autocomplete_txt" autocomplete="off" ></td>
+              <td width="25%"><input type="text" data-type="AccHeadDesc" name="AccHeadDesc[]" id="AccHeadDesc_1" class="form-control" autocomplete="off" readonly></td>
+              <td width="10%"><input type="text" name="Debit[]" id="Debit_1" onkeydown="search(this.value,1)" class="form-control input-sm changesDebit dAmount" autocomplete="off" ></td>
+              <td width="10%"><input type="text" name="Crebit[]" id="Crebit_1" onkeydown="search(this.value,2)" class="form-control input-sm changesCredit cAmount"  autocomplete="off"></td>
+              <td width="3%"></td>
+            </tr>
+           </tbody>
+        </table>
+      </div>
+    </div>
+   <div class="row justify-content-center">
+    <div class="col-md-12">
+      <table class="table table-bordered text-center" style="margin-top: -1px;background-color: #ededed">
+        <thead></thead>
+        <tbody>
+          <tr style="background: #fff6f9;">
+            <td width="3%"><span id="" style="font-size: 8px;color: black"></span></td>
+            <td width="2%" style="display: none"><span id="" style="font-size: 8px;color: black"></span></td>
+            <td width="2%" style="display: none"><span id="" style="font-size: 8px;color: black"></span></td>
+            <td width="15%"><span id="" style="font-size: 8px;color: black"></span></td>
+            <td width="25%"><span id="" style="font-size: 17px; color: black"><b>Total:</b></span></td>
+            <td width="10%"><span id="total_debit" style="font-size: 17px;color: black"></span>
+              <input type="hidden" name="total_debit_in" id="total_debit_in" class="form-control"  autocomplete="off">
+            </td>
+            <td width="10%"><span id="total_credit" style="font-size: 17px;color: black"></span>
+            <input type="hidden" name="total_credit_in" id="total_credit_in" class="form-control"  autocomplete="off"></td>
+            <td width="3%"><button type="button" class="btn btn-primary btn-sm addmore" id="addMore">+</button></td>
+          </tr>
+        </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="row justify-content-left">
+          <div class="col-sm-12 text-left">
+              <button class="btn btn-sm btn-success" type="button" onclick="formcheck(); return false"><i class="fa fa-save"></i> Save</button>
+              <button class="btn btn-sm btn-success" type="button"><i class="fa fa-save"></i> Print</button>
+              <a href="#" class="btn btn-sm btn-info"><i class="fa fa-list"></i> List</a>
+          </div>
+      </div>
+
+    </div>
+  </form>
+</section>
+@stop
+@section('pagescript')
+  <script src="{{ asset('assets/js/jquery-ui.min.js') }}"></script>
+  <script src="{{ asset('assets/js/ace-elements.min.js') }}"></script>
+  <script src="{{ asset('assets/js/ace.min.js') }}"></script>
+  <script src="{{ asset('assets/blogic_js/acc_trans.js') }}"></script>
+@stop

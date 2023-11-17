@@ -1,0 +1,756 @@
+@extends('layouts.app')
+@section('css')
+    <link rel="stylesheet" href="{{ asset('assets/css/jquery-ui.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/chosen.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/blogic_css/sales_tb.css') }}" />
+    <!-- include summernote css/js -->
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+
+@stop
+@section('content')
+<section class="content">
+  <input type="hidden" name="menu_selection" id="menu_selection" value="MM@1" class="form-control" required>
+
+<div class="title">
+  <div  style="background-color:#e0e0e0" class="widget-header widget-header-small">
+    <h6 class="widget-title smaller">
+    <font size="2" color="blue"><b>Finish Goods Receive Form</b></font>
+    </h6>
+    <div class="widget-toolbar">
+      <a href="{{route('fin.goods.rec.index')}}" class="blue"><i class="fa fa-list"></i> List</a>
+    </div>
+  </div>
+</div>
+@if(Session::has('message'))
+ <div class="row">
+   <div class="col-md-12">
+     <p class="alert alert-success"><font size="4" color="red"><b>{{ Session::get('message') }}</b></font></p>
+   </div>
+</div>
+@endif 
+    <div class="widget-body">
+      <div class="widget-main">
+      <form id="get_Form" action="{{ route('get.issue_prod_list') }}" method="post"  class="delete_form">
+        {!! csrf_field() !!}
+         <div class="row"> 
+            <div class="col-md-3">
+              <div class="input-group ss-item-required">
+                <select name="issue_no" class="chosen-select" id="issue_no" required>
+                <option value="" >--Select Issue List--</option>
+                    @if ($issue_to_prod_list->count())
+                        @foreach($issue_to_prod_list as $list)
+                            <option {{ $issue_no == $list->id ? 'selected' : '' }} value="{{$list->id}}" >{{ $list->r_issue_order_ref }}</option>
+                        @endforeach
+                    @endif
+                </select>
+              </div>
+           </div>
+           <div class="col-md-4">
+               <div class="input-group">
+                <button type="submit" class="btn btn-primary btn-sm" >Get Issue To Prod List</button>
+              </div>
+           </div>
+        </div>
+        </form>
+        <form id="inv_Form" action="{{route('fin.goods.rec.store')}}" method="post">
+         {{ csrf_field() }}
+         <input type="hidden" name="res_issue_id" id="res_issue_id" value="{{$issue_no}}" class="form-control" />
+         <div class="row"> 
+          <div class="col-md-3">
+            <div class="input-group ss-item-required">
+                <div class="input-group-prepend ">
+                    <div class="input-group-text" style="min-width:70px">Receive Date:</div>
+                </div>
+                <input type="text" size = "15" name="rec_date" onclick="displayDatePicker('rec_date');"  value={{ date('d-m-Y',strtotime($rec_date)) }} />
+                <a href="javascript:void(0);" onclick="displayDatePicker('rec_date');"><img src="{{ asset('assets/images/calendar.png') }}" alt="calendar" border="0"></a>
+            </div>
+          </div>
+           
+          <input type="hidden" name="currencyValue" id="currencyValue" value="1" class="form-control changesCurrency" required readonly/>
+          <input type="hidden" name="currencyName" id="currencyName" value="BDT" class="form-control" required readonly/>
+          
+           <div class="col-md-3">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                      <div class="input-group-text" style="min-width:70px">Company:</div>
+                  </div>
+                  <select name="company_code" class="form-control-sm autocomplete" id="company_code"  style="max-width:150px" required>
+                  <option value="" >--Select--</option>
+                      @if ($companies->count())
+                          @foreach($companies as $company)
+                              <option {{ $company_code == $company->comp_id ? 'selected' : '' }} value="{{$company->comp_id}}" >{{ $company->comp_id }}-{{ $company->name }}</option>
+                          @endforeach
+                      @endif
+                  </select>
+                 </div>
+          </div>
+      </div>
+      <div class="row">
+          <div class="col-md-12">
+              <div class="input-group ss-item-required">
+                  <div class="input-group-prepend">
+                      <div class="input-group-text" style="min-width:80px">Comments:</div>
+                  </div>
+                  <!--div class="summernote">summernote 1</div-->
+                  <textarea class="" rows="1" cols="100" name="comments" id="comments">{{ old('comments') }}</textarea>
+              </div>
+           </div>
+        </div>
+         <div class="col-md-3">
+           <div class="input-group ss-item-required">
+             <input type="hidden" name="result_storage_id" id="result_storage_id" value="1" class="form-control" readonly required/>
+           </div>
+         </div>
+      </div>
+       <div class="row">
+         <div class="col-md-12">
+           <div class="tab-content">
+               <div role="tabpanel" class="tab-pane active" id = "itemdetails">
+                 <div class="row">
+                   <div class="col-md-12 input-group">
+                     <table id="salesTable" class="table table-striped table-data table-view">
+                       <thead class="salesTable">
+                         <th width="1.5%" class="text-center">&nbsp;&nbsp;</th>
+                         <th width="20%" class="text-center">Raw Item Name</th>
+                         <th width="8%" class="text-center">Raw<br/>Qty</th>
+                         <th width="7%" class="text-center">Bal Raw Qty</th>
+                         <th width="5%" class="text-center">Raw<br/>Unit</th>
+
+                         <th width="2%" style="display: none" class="text-center">Id</th>
+                         <th width="5%" style="display: none" class="text-center">Code</th>
+                         <th width="7%" style="display: none" class="text-center">Barcode</th>
+                         <th width="23%" class="text-center">Item Name</th>
+                         <th width="20%" class="text-center">Item Specification</th>
+                         
+                         <th width="7%" class="text-center">Qty<br/>(Pcs)</th> 
+                        
+                         <th width="10%" class="text-center">Total Weight</th>
+
+                         <th width="7%" class="text-center">Weight<br/></th>
+                         <th width="5%" class="text-center">Unit</th>
+                         <th width="8%" class="text-center">Rate</th>
+                         <th width="12%" class="text-center">Amount</th> 
+                         <th width="10%" class="text-center">Remarks</th>
+                         <th width="3.5%" class="text-center">&nbsp;</th>
+                     </thead>
+                   <tbody class="salesTable" style="background-color: #ffffff;">
+                    <?php $i = 1; ?>
+                    @foreach($rows_raw as $d)
+                     <tr>
+                       <td width="1.5%" class="text-center">{{$i}}</td> 
+                       <td width="1%" style="display: none"><input type="text" data-type="IssueProdDetId" name="IssueProdDetId[]" id="IssueProdDetId_{{$i}}" value="{{$d->issueProdDetId}}" class="form-control" autocomplete="off" readonly></td>
+                       <td width="1%" style="display: none"><input type="text" data-type="RawItemId" name="RawItemId[]" id="RawItemId_{{$i}}" value="{{$d->r_issue_item_id}}" class="form-control" autocomplete="off" readonly></td>
+ 
+                       <td width="20%"><input type="text" data-type="RawItemName" name="RawItemName[]" id="RawItemName_{{$i}}" value="{{$d->item_name}} ({{ $d->itm_cat_name }})" class="form-control" autocomplete="off" readonly></td>
+                       <td width="8%"><input type="text" data-type="RawItemQty" name="RawItemQty[]" id="RawItemQty_{{$i}}" value="{{$d->r_issue_item_qty}}" class="form-control" autocomplete="off" readonly></td>
+                       <?php $BalRawItemQty = $d->r_issue_item_qty - $d->r_issue_item_qty_rec; ?>
+                       <td width="7%"><input type="text" data-type="BalRawItemQty" name="BalRawItemQty[]" id="BalRawItemQty_{{$i}}" value="{{number_format($BalRawItemQty,3) }}" class="form-control" autocomplete="off" readonly></td>
+                       <td width="5%"><input type="text" data-type="RawItemUnit" name="RawItemUnit[]" id="RawItemUnit_{{$i}}" value="{{$d->r_issue_item_unit}}" class="form-control" autocomplete="off" readonly></td>
+
+                       <td width="2%" style="display: none"><input type="text" data-type="ItemCodeId" name="ItemCodeId[]" id="ItemCodeId_{{$i}}" class="form-control item_id_class" autocomplete="off"></td>
+                       <td width="5%" style="display: none"><input type="text" data-type="ItemCode" name="ItemCode[]" id="ItemCode_{{$i}}" class="form-control autocomplete_txt" autocomplete="off"></td>
+                       <td width="7%" style="display: none"><input type="text" data-type="ItemBarCode" name="ItemBarCode[]" id="ItemBarCode_{{$i}}" onKeyUp="loadItemsDetByBarcode(this.id,this.value)" class="form-control autocomplete_barcode_txt" autocomplete="off"></td>
+                       <td width="23%">
+                       <div><select data-type="itemid" name="itemid[]"  id ="itemid_{{$i}}" class="form-control chosen-select" onchange="loadItemsDet(this.id,this.value)">
+                           <option value="" disabled selected>- Select Item -</option>
+                           @foreach($item_list as $cmb)
+                               <option  value="{{ $cmb->id }}">{{ $cmb->item_name }}({{ $cmb->itm_cat_name }})</option>
+                           @endforeach
+                         </select></div>
+                      </td>
+                       <td width="20%"><input type="text" data-type="ItemDesc" name="ItemDesc[]" id="ItemDesc_{{$i}}" class="form-control" autocomplete="off" ></td>
+                  
+                      <td width="7%" align="center"><input type="text" data-type="PCS" name="PCS[]" id="PCS_{{$i}}" class="form-control input-sm changesNo" style="font-weight:bold; text-align: center;" autocomplete="off" ></td>
+
+                       <td width="10%" align="center"><input type="text" data-type="Qty" name="Qty[]" id="Qty_{{$i}}" onkeydown="enter(this.id,this.value)" class="form-control input-sm changesNo iQty" style="font-weight:bold; text-align: center;" autocomplete="off" ></td>
+                       
+                       <td width="7%" align="center"><input type="text" data-type="QWeight" name="QWeight[]" id="QWeight_{{$i}}" class="form-control input-sm changesNo" style="font-weight:bold; text-align: center;" autocomplete="off" ></td>
+
+                       <td width="5%"><input type="text" data-type="Unit" name="Unit[]" id="Unit_{{$i}}" value="{{$d->r_issue_item_unit}}" class="form-control" autocomplete="off" ></td>
+                       
+                       <td width="8%" align="right"><input type="text" data-type="Rate" name="Rate[]" id="Rate_{{$i}}" Value="{{ $d->r_issue_item_price }}" onkeydown="enter(this.id,this.value)" class="form-control input-sm changesNo iRate" style="font-weight:bold; text-align: center;" autocomplete="off"></td>
+                       
+                       <td width="12%" align="right"><input type="text" data-type="Amount" name="Amount[]" id="Amount_{{$i}}" class="form-control input-sm iAmount" style="font-weight:bold; text-align: right;" autocomplete="off" readonly></td>
+                        
+                       <td width="10%" align="right"><input type="text" data-type="Remarks" name="Remarks[]" id="Remarks_{{$i}}" class="form-control input-sm" style="font-weight:bold; text-align: left;" autocomplete="off" ></td>
+                        
+                       <td width="3.5%"><div class="btn-group btn-corner"><button type="button" tabindex="-1" class="btn btn-danger btn-xs delete" title="Delete This Row" onclick="removeRow(this)"><i class="fa fa-trash"></i></button></div></td>
+                       
+                   </tr>
+                   <?php $i = $i + 1; ?>
+                   @endforeach
+                    </tbody>
+                 </table>
+               </div>
+
+              </div>
+
+              <div class="row">
+                <div class="col-md-10">
+                 <table class="table table-striped table-data table-view">
+                   <tbody style="background-color: #ffffff;">
+                     <tr>
+                       <td colspan="10" align="right">&nbsp;</td>
+                       <td width="2%" align="center"><input type="text" data-type="total_qty" name="total_qty" id="total_qty" value="0" style="font-weight:bold; text-align: right;" readonly></td>
+                       
+                       <td width="2%" align="right"><input type="text" data-type="total_amount" name="total_amount" id="total_amount" value="0.00" style="font-weight:bold; text-align: right;" readonly></td>
+                       <td width="2%" align="right" style="display: none"><input type="text" data-type="total_amount_bdt" name="total_amount_bdt" id="total_amount_bdt" value="0.00" style="font-weight:bold; text-align: right;" readonly></td>
+                       <td width="3%"></td>
+                     </tr>
+                    </tbody>
+                 </table>
+               </div></div>
+
+               </div>
+           </div>
+         </div>
+       </div>
+      <div class="row justify-content-left">
+        <div class="col-sm-12 text-left">
+            <button class="btn btn-sm btn-success" type="button" id='btn1' ><i class="fa fa-save"></i> Save</button> 
+            <a href="{{route('fin.goods.rec.index')}}" class="btn btn-sm btn-info"><i class="fa fa-list"></i> List</a>
+        </div>
+      </div>
+    </div>
+    </div>
+  </form>
+</section>
+@stop
+@section('pagescript')
+<script src="{{ asset('assets/js/jquery-ui.min.js') }}"></script>
+<script src="{{ asset('assets/js/chosen.jquery.min.js') }}"></script>
+<script src="{{ asset('assets/js/ace-elements.min.js') }}"></script>
+<script src="{{ asset('assets/js/ace.min.js') }}"></script>
+<script src="{{ asset('assets/blogic_js/sel_box_search.js') }}"></script>
+
+<script>
+var form = document.getElementById('inv_Form');
+document.getElementById('btn1').onclick = function() {
+  if(formcheck()){
+      $($('#btn1')).prop('disabled', true);
+    form.submit();
+  }
+}
+
+document.getElementById('btn2').onclick = function() {
+  form.action = '{{route("raw.itm.receive.store")}}';
+  if(formcheck()){
+    form.submit();
+  }
+}
+
+function handleClick(myRadio) {
+    if(myRadio.value == '0'){
+      $('#currencyName').val('BDT');
+    }else{
+      $('#currencyName').val('USD');
+    }
+}
+
+function formcheck() {
+  var isSubmit = true;
+  var fields = $(".ss-item-required")
+  .find("select, textarea, input").serializeArray();
+
+  $.each(fields, function(i, field) {
+    if (!field.value){
+      alert(field.name + ' is required');
+      isSubmit = false;
+      return isSubmit;
+    }
+  });
+
+  var currencyValue = $('#currencyValue').val();
+  
+  return isSubmit;
+  //if(isSubmit) formSubmit();
+  //console.log(fields);
+}
+
+function formSubmit()
+{
+    $('#inv_Form').submit()
+}
+</script>
+
+<script>
+$(document).ready(function() {
+  $('.summernote').summernote();
+});
+
+$(document).on('change keyup blur', '.changesCurrency', function () {
+    
+    currencyValue = 1;
+    
+
+    var i = parseInt($('#salesTable tr').length);
+  //  alert(currencyValue+i);
+    for(j=0; j<i; j++){
+      //alert(currencyValue+i+j);
+      price     = $('#Rate_' + j).val();
+      quantity  = $('#Qty_' + j).val();
+      if (quantity != '' && price != ''){
+        alert(price +' '+quantity);
+          amount = (parseFloat(price)*parseFloat(quantity)).toFixed(2);
+          $('#Amount_' + j).val(amount); 
+          $('#AmountBDT_' + j).val(amount);
+      }else{
+        $('#Amount_' + j).val(0);
+        $('#AmountBDT_' + j).val(0);
+      }
+    }
+    totalQuantityCount();
+    totalAmountCount();
+    totalAmountBDTCount();
+});
+
+$(document).on('change keyup blur', '.changesNo', function () {
+  id_arr = $(this).attr('id');
+  id = id_arr.split("_");
+  //alert(id[0]);
+  
+  unit         = $('#Unit_' + id[1]).val();
+  currencyValue = $('#currencyValue').val(); 
+  stockQuantity = $('#BalRawItemQty_' + id[1]).val();
+  price         = $('#Rate_' + id[1]).val();
+ 
+  qweight         = $('#QWeight_' + id[1]).val();
+
+  pcs           = $('#PCS_' + id[1]).val();
+  total_weight = $('#Qty_' + id[1]).val();
+
+  if (pcs == '' || total_weight == '') {
+    $('#QWeight_'  + id[1]).val(0);
+  }
+
+  $('#QWeight_'  + id[1]).val(total_weight / pcs);
+ 
+  // stockQuantity = parseFloat(stockQuantity.replace(/\$|,/g, ''));
+
+  // comment by shofiq
+  // if(parseFloat(qweight) > 0 && parseFloat(pcs) > 0){ 
+  //     quantity = parseFloat((parseFloat(qweight) * parseFloat(pcs))/1000); 
+      
+  //     if(parseFloat(quantity) <= parseFloat(stockQuantity)){
+  //       console.log(stockQuantity);
+  //       $('#Qty_' + id[1]).val(quantity);
+  //     }else{ 
+  //       $('#Qty_' + id[1]).val(0);
+  //       $('#Amount_' + id[1]).val(0);
+  //     }
+  //     // added this line ()(remove)
+  //     $('#Qty_' + id[1]).val(quantity);
+  // }else{
+  //     $('#Qty_' + id[1]).val(0);
+  //     $('#Amount_' + id[1]).val(0);
+  // }
+  quantity = $('#Qty_' + id[1]).val();
+
+
+  //  old comment
+  // if(stockQuantity > 0){
+  //     if(parseFloat(quantity) > parseFloat(stockQuantity)){
+  //         $('#Qty_' + id[1]).val(stockQuantity);
+  //     } 
+  // }else{
+  //     $('#Qty_' + id[1]).val(0);
+  // }
+
+   
+  if (quantity > 0 && price > 0){  
+      if(unit == 'KG') 
+        amount = (parseFloat(price)*parseFloat(quantity)).toFixed(2);
+      else
+        amount = (parseFloat(price)*parseFloat(pcs)).toFixed(2);
+
+      $('#Amount_' + id[1]).val(amount); 
+  }else{
+    $('#Amount_' + id[1]).val(0); 
+  }
+  totalQuantityCount();
+  totalAmountCount();
+  //totalAmountBDTCount();
+});
+
+function totalQuantityCount()
+{
+    var total_qty = 0;
+    $('.iQty').each(function(){
+        if(parseFloat($(this).val())>0)
+            total_qty += parseFloat($(this).val());
+    });
+    $('#total_qty').val(total_qty);
+}
+
+function totalAmountCount()
+{
+    var total_amount = 0;
+    $('.iAmount').each(function(){
+        if(parseFloat($(this).val())>0)
+            total_amount += parseFloat($(this).val());
+    });
+    $('#total_amount').val(parseFloat(total_amount).toFixed(2));
+}
+
+function totalAmountBDTCount()
+{
+    var total_amount_bdt = 0;
+    $('.iAmountBDT').each(function(){
+        if(parseFloat($(this).val())>0)
+            total_amount_bdt += parseFloat($(this).val());
+    });
+    $('#total_amount_bdt').val(parseFloat(total_amount_bdt).toFixed(2));
+}
+
+function getStorageByWearId(w_house){
+    var comp_code = $('#company_code').val();
+  //  alert('get-storage-inf/getdetails/'+comp_code+'/'+w_house+'/getfirst');
+
+    $.ajax({  //create an ajax request to display.php
+      type: "GET",
+      url: '/get-storage-inf/getdetails/'+comp_code+'/'+w_house+'/getfirst',
+      success: function (data) {
+        $("#result_storage_id").val(data.id)
+      }
+    });
+}
+
+function loadItemsDet(el,itemid){
+    var storgae_id = $('#result_storage_id').val();
+    var comp_code = $('#company_code').val();
+    id_arr = el;
+    id = id_arr.split("_");
+    i = id[1];
+  
+    //alert('get-avg-price-inf/'+comp_code+'/'+itemid+'/getfirst');
+    // $.ajax({  //create an ajax request to display.php
+    //   type: "GET",
+    //   url: '/get-stock-inf/'+storgae_id+'/'+itemid+'/101/getfirst',
+    //   success: function (data) { 
+    //     //alert(data.stock);
+    //     qty = parseFloat(data.stock);
+    //     $("#Stock_"+i).val(qty);
+    //     $('#Qty_'+i).focus(); 
+    //   }
+    // });
+
+    // $.ajax({  //create an ajax request to display.php
+    //   type: "GET",
+    //   url: '/get-avg-price-inf/'+comp_code+'/'+itemid+'/getfirst',
+    //   success: function (data) { 
+    //    // alert(data.avgprice);
+    //     avgprice = parseFloat(data.avgprice);
+    //     $("#Rate_"+i).val(avgprice);
+    //     $('#Qty_'+i).focus();  
+    //   }
+    // });
+
+    $.get('/get-raw-item-code/getdetails/'+itemid+'/getfirst', function(data){
+    item = data.data
+    }).then(function(){ 
+      $('tr.duplicate').removeClass('duplicate')
+      checkDuplicateItem(id, item,false)
+     // getDropdownStorageList(id[1])
+      //  calcluteTotalBill()
+      //  totalQuantityCount()
+    })
+ 
+}
+
+function loadItemsDetByBarcode(el,itembarcode){
+    var so_id  = $('#so_id').val();
+    //alert(el+' Item:'+itembarcode+' SO:'+so_id);
+    if (itembarcode != ''){
+      $.get('/get-item-bar-code/getdetails/'+itembarcode+'/getfirst', function(data){
+      item = data.data
+      }).then(function(){
+        id_arr = el
+        id = id_arr.split("_")
+        $('tr.duplicate').removeClass('duplicate')
+        checkDuplicateItem(id, item,false)
+        getDropdownItemList(id[1],item.id)
+      })
+    }
+}
+
+function getSupplierDetails(custid){
+  var customer_id = $('#supplier_id').val();
+  $('#result_supplier_id').val(customer_id);
+}
+
+function enter(id,amount) {
+    if(event.keyCode == 13) {
+        field = id.split("_")[0];
+        i = id.split("_")[1];
+       // if(amount > 0 && field == 'Qty' || field == 'Rate' ) row_increment();
+    }
+}
+
+function removeRow(el) {
+    $(el).parents("tr").remove();
+    totalQuantityCount();
+    totalAmountCount();
+    totalAmountCountBDT();
+}
+
+function row_increment() {
+
+    var i = $('#salesTable tr').length;
+    exp_date = "'exp_date_"+i+"'";
+    html = '<tr>';
+    html += '<td width="1.5%" class="text-center">' + i + '</td>';
+    html += '<td width="2%" style="display: none"><input type="text" data-type="ItemCodeId" name="ItemCodeId[]" id="ItemCodeId_' + i + '"  class="form-control item_id_class" autocomplete="off"></td>';
+    html += '<td width="5%" style="display: none"><input type="text" data-type="ItemCode" name="ItemCode[]" id="ItemCode_' + i + '" class="form-control autocomplete_txt" autocomplete="off"></td>';
+    html += '<td width="7%" style="display: none"><input type="text" data-type="ItemBarCode" name="ItemBarCode[]" id="ItemBarCode_' + i + '" onKeyUp="loadItemsDetByBarcode(this.id,this.value)" class="form-control autocomplete_barcode_txt" autocomplete="off"></td>';
+    html += '<td width="23%">';
+    html += '<div><select data-type="itemid" name="itemid[]"  id ="itemid_' + i + '" class="chosen-select" onchange="loadItemsDet(this.id,this.value)">';
+    html += '<option value="" disabled selected>-- Select Item --</option>';
+    html += '</select></div></td>';
+    html += '<td width="23%"><input type="text" data-type="ItemDesc" name="ItemDesc[]" id="ItemDesc_' + i + '" class="form-control" autocomplete="off"></td>';
+    // html += '<td width="5%" style="display: none">';
+    // html += '<div><select data-type="Storage" name="Storage[]"  id ="Storage_' + i + '" class="chosen-select" >';
+    // html += '</select></div></td>';
+    
+    //html += '<td width="10%" align="center"><input type="text" size = "10" name="exp_date_' + i + '" id="exp_date_' + i + '" onclick="displayDatePicker(' + exp_date + ');"  value={{ date("d-m-Y") }} />';
+    //html += '<a href="javascript:void(0);" onclick="displayDatePicker(' + exp_date + ');"><img src="{{ asset("assets/images/calendar.png") }}" alt="calendar" border="0"></a></td>';
+    //html += '<td width="8%"><input type="text" data-type="LotNo" name="LotNo[]" id="LotNo_' + i + '"  class="form-control input-sm" style="font-weight:bold; text-align: center;" autocomplete="off"></td>';
+    // html += '<td width="8%"><input type="text" data-type="Stock" name="Stock[]" id="Stock_' + i + '" class="form-control input-sm" style="font-weight:bold; text-align: center;" autocomplete="off" readonly></td>';
+    html += '<td width="7%"><input type="text" data-type="QWeight" name="QWeight[]" id="QWeight_' + i + '" class="form-control input-sm changesNo" style="font-weight:bold; text-align: center;" autocomplete="off"></td>';
+
+    html += '<td width="7%"><input type="text" data-type="PCS" name="PCS[]" id="PCS_' + i + '"  class="form-control input-sm changesNo" style="font-weight:bold; text-align: center;" autocomplete="off"></td>';
+
+    html += '<td width="8%"><input type="text" data-type="Qty" name="Qty[]" id="Qty_' + i + '"  onkeydown="enter(this.id,this.value)" class="form-control input-sm changesNo iQty" style="font-weight:bold; text-align: center;" autocomplete="off"></td>';
+
+    html += '<td width="8%"><select data-type="Unit" name="Unit[]"  id ="Unit_' + i + '" class="chosen-select">';
+    html += '<option value="" disabled selected>-- Select Unit --</option>';
+    html += '</select></div></td>';
+
+    html += '<td width="6%"><input type="text" data-type="Rate" name="Rate[]" id="Rate_' + i + '" onkeydown="enter(this.id,this.value)" class="form-control input-sm changesNo iRate" style="font-weight:bold; text-align: center;" autocomplete="off"></td>';
+    html += '<td width="12%"><input type="text" data-type="Amount" name="Amount[]" id="Amount_' + i + '" class="form-control input-sm iAmount" style="font-weight:bold; text-align: right;" autocomplete="off" readonly></td>';
+     
+    html += '<td width="10%"><input type="text" data-type="Remarks" name="Remarks[]" id="Remarks_' + i + '" class="form-control input-sm" style="font-weight:bold; text-align: left;" autocomplete="off" ></td>';
+    html += '<td width="3.5%"><div class="btn-group btn-corner"><button type="button" tabindex="-1" class="btn btn-danger btn-xs delete" title="Delete This Row" onclick="removeRow(this)"><i class="fa fa-trash"></i></button></div></td>';
+    html += '</tr>';
+
+    $('#salesTable').append(html);
+    getDropdownItemList(i,0);
+    getDropdownUnitList(i,0);
+    getDropdownStorageList(i);
+    document.getElementById('ItemCode_'+i).focus();
+    i++;
+}
+
+$(document).on('keypress', '.autocomplete_barcode_txt', function () {
+    compcode = $('#company_code').val()
+    custid  = $('#customer_id').val()
+    //  alert(compcode)
+    el = $(this).attr('id')
+    //alert(el)
+    $(this).autocomplete({
+      source: function(req, res){
+      $.ajax({
+          url: "/get-item-code/all",
+          dataType: "json",
+          data:{'itemcode':encodeURIComponent(req.term),
+                'custsid':encodeURIComponent(custid),
+                'compcode':encodeURIComponent(compcode) },
+
+          error: function (request, error) {
+             console.log(arguments);
+             alert(" Can't do because: " +  console.log(arguments));
+          },
+
+        success: function (data) {
+          res($.map(data.data, function (item) {
+            //alert('IQII:'+item.acc_head)
+            return {
+              label: item.item_bar_code,
+              value: item.item_bar_code,
+              itm_id: item.id,
+              el:el,
+            };
+          }));
+        }
+      });
+    },
+      autoFocus:true,
+      select: function(event, ui){
+      //alert(ui.item.itm_id)
+      $.get('get-item-code/getdetails/'+ui.item.itm_id+'/getfirst', function(data){
+      item = data.data
+      }).then(function(){
+
+        id_arr = ui.item.el
+        id = id_arr.split("_")
+        $('tr.duplicate').removeClass('duplicate')
+        checkDuplicateItem(id, item,true)
+        $('LotNo_'+id[1]).focus()
+        //  calcluteTotalBill()
+        //  totalQuantityCount()
+      })
+    }
+  })
+})
+
+$(document).on('keypress', '.autocomplete_txt', function () {
+    compcode = $('#company_code').val()
+    custid  = $('#customer_id').val()
+    //  alert(compcode)
+    el = $(this).attr('id')
+    //alert(el)
+    $(this).autocomplete({
+      source: function(req, res){
+      $.ajax({
+          url: "/get-item-code/all",
+          dataType: "json",
+          data:{'itemcode':encodeURIComponent(req.term),
+                'custsid':encodeURIComponent(custid),
+                'compcode':encodeURIComponent(compcode) },
+
+          error: function (request, error) {
+             console.log(arguments);
+             alert(" Can't do because: " +  console.log(arguments));
+          },
+
+        success: function (data) {
+          res($.map(data.data, function (item) {
+            //alert('IQII:'+item.acc_head)
+            return {
+              label: item.item_code,
+              value: item.item_code,
+              itm_id: item.id,
+              el:el,
+            };
+          }));
+        }
+      });
+    },
+      autoFocus:true,
+      select: function(event, ui){
+      //alert(ui.item.itm_id)
+      $.get('get-item-code/getdetails/'+ui.item.itm_id+'/getfirst', function(data){
+      item = data.data
+      }).then(function(){
+
+        id_arr = ui.item.el
+        id = id_arr.split("_")
+        $('tr.duplicate').removeClass('duplicate')
+        checkDuplicateItem(id, item,true)
+        $('LotNo_'+id[1]).focus()
+        //  calcluteTotalBill()
+        //  totalQuantityCount()
+      })
+    }
+  })
+ })
+
+ function checkDuplicateItem(id, names,s_tag){
+        //alert(id);
+        var arr = []
+        var item_id_class = $('.item_id_class')
+        if(item_id_class.length>0){
+            item_id_class.each(function(index, item){
+                arr.push({item:$(item).val(), id:$(item).attr('id').split('_')[1]})
+            })
+        }
+        var flag = inArray(names.id, arr)
+        if(flag[0]){
+            var duplicateItemId = flag[1]
+            $('#ItemCode_'+duplicateItemId).parent().parent('tr').addClass('duplicate')
+            alert('You have selected duplicate Item!')
+        }else{
+
+       //alert(names.id+'@'+names.item_name+'@'+names.item_desc+'@'+names.vUnitName+'@'+names.item_bal_stock+'@'+names.item_unit+'@'+names.item_price);
+
+        $('#ItemCodeId_' + id[1]).val(names.id);
+        $('#ItemCode_' + id[1]).val(names.item_code);
+        $('#ItemBarCode_' + id[1]).val(names.item_bar_code);
+        $('#itemid_' + id[1]).val(names.item_name);
+        $('#ItemDesc_' + id[1]).val(names.item_desc);
+        // $('#Price_' + id[1]).val(names.item_price);
+        // $('#Unit_' + id[1]).val(names.item_unit);
+        // $('#Stock_' + id[1]).val(names.item_bal_stock);
+        if(s_tag) setDropdownItemList(names.id,id[1]); // this is for selection item code
+        else $('#ItemCode_' + id[1]).val(names.item_code); // this is for selection item box
+        $('#LotNo_'+id[1]).focus()
+      }
+    }
+
+    function inArray(needle, haystack) {
+        var length = haystack.length;
+        /*for(var i = 0; i < length; i++) {
+            if(haystack[i].item == needle) return [true, haystack[i].id];
+        }*/
+        return [false];
+    }
+
+    function setDropdownItemList(itemid,id){
+      //alert(document.getElementById('itemid_'+id)+':::');
+      //alert(itemid+':::'+id);
+      $("#itemid_"+id+" > [value=" + itemid + "]").attr("selected", "true").trigger('chosen:updated');
+    //  $("#delivered_to").attr("selected", "true").trigger('chosen:updated');
+
+    }
+
+    function getDropdownStorageList(i){
+      var comp_code = $('#company_code').val();
+      var w_house = $('#itm_warehouse').val();
+      i = parseInt(i);
+      $.get('{{ url('/') }}/storageLookup/'+comp_code+'/'+w_house, function(response) {
+        var selectList = $('select[id="Storage_'+i+'"]');
+        selectList.chosen();
+        selectList.empty();
+        $.each(response, function(index, element) {
+          selectList.append('<option value="' + element.id + '">' +element.stor_code +'('+ element.stor_name +')</option>');
+        });
+        selectList.trigger('chosen:updated');
+      });
+    }
+
+    function getDropdownItemList(i,oldItem){
+      var compcode = $('#company_code').val();
+      i = parseInt(i);
+    //  alert(i + ","+ compcode + "," + custid);
+      $.get('{{ url('/') }}/finishgoodsLookup/'+compcode, function(response) {
+        var selectList = $('select[id="itemid_'+i+'"]');
+        selectList.chosen();
+        selectList.empty();
+        //$('#itemid_' + i).append('<option value="">--Select Item--</option>');
+        selectList.append('<option value="" disabled selected>--Select Item_'+i+'--</option>');
+        $.each(response, function(index, element) {
+          //alert(element.id+ ' SD ' +element.item_name);
+          if (oldItem ==  element.id){
+            selectList.append('<option value="' + element.id + '" selected>' + element.item_name +' ('+ element.itm_cat_name +')</option>');
+          }else{
+            selectList.append('<option value="' + element.id + '">' + element.item_name +' ('+ element.itm_cat_name +')</option>');
+          }
+        });
+        selectList.trigger('chosen:updated');
+      });
+    }
+
+    function getDropdownUnitList(i,oldItem){
+      var compcode = $('#company_code').val();
+      i = parseInt(i);
+      //alert(i + ","+ compcode + "," + oldItem);
+      $.get('{{ url('/') }}/rawUnitLookup/'+compcode, function(response) {
+        var selectList = $('select[id="Unit_'+i+'"]');
+        selectList.chosen();
+        selectList.empty();
+       
+        selectList.append('<option value="" disabled selected>--Select Unit_'+i+'--</option>');
+        $.each(response, function(index, element) {
+         // alert(element.id+ ' SD ' +element.vUnitName);
+          if (oldItem ==  element.vUnitName){
+            selectList.append('<option value="' + element.vUnitName + '" selected>' + element.vUnitName +'</option>');
+          }else{
+            selectList.append('<option value="' + element.vUnitName + '">' + element.vUnitName +'</option>');
+          }
+        });
+        selectList.trigger('chosen:updated');
+      });
+    }
+
+  </script>
+@stop

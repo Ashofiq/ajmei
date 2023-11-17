@@ -1,0 +1,76 @@
+
+* html .ui-autocomplete {
+    height: 300px;
+}
+
+.ui-autocomplete {
+    max-height: 300px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+    background-color: #FFF;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
+    z-index: 9999999;
+}
+
+.widget-title {
+    color: #235bfb !important;
+}
+
+.ace-nav>li.light-blue>a {
+    background-color: #4a98e0 !important;
+}
+
+.ace-nav>li.open.light-blue>a {
+    background-color: #0f1e93 !important;
+}
+
+.widget-title{
+    color: #235bfb;
+}
+
+.widget-body {
+    background-color: #e3e9ec;
+    color: black;
+}
+
+
+/*.btn-info, .btn-info.focus, .btn-info:focus {*/
+/*    background-color: #a61b1b !important;*/
+/*    border-color: #a61b1b;*/
+/*}*/
+.ace-nav>li {
+    line-height: 74px !important;
+    height: 70px !important;
+    border-left: 1px solid #E1E1E1;
+    padding: 0;
+    position: relative;
+    float: left;
+}
+
+
+.infobox{
+    
+    height: auto;
+}
+.infobox>.infobox-icon {
+    width: 175px;
+}
+.infobox>.infobox-icon>.ace-icon:before {
+    font-size: 105px;
+    width: 159px;
+    padding: 22px 0 7px;
+}
+.infobox>.infobox-icon>.ace-icon {
+    height: 149px;
+}
+.infobox .infobox-content {
+    max-width: 100%;
+}
+.widget-title {
+    color: red;
+}
+
+tbody.saleTable {
+    height: 400px;
+}

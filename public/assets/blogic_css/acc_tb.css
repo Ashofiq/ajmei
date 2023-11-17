@@ -1,0 +1,20 @@
+        tr.duplicate{
+            background: red !important;
+        }
+
+        tbody.accTable {
+            display:block;
+            height:320px;
+            overflow:auto;
+            scroll-padding: -1px;
+            border: 1px solid #bababa;
+        }
+        thead.accTable, tbody.acc_table tr {
+            display:table;
+            width:100%;
+            table-layout:fixed;
+        }
+        thead.accTable{
+            width: calc( 100%);
+            border: 1px solid #bababa;
+        }

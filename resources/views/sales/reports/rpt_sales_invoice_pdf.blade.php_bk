@@ -1,0 +1,198 @@
+<html>
+    <head>
+        <style>
+        body { margin: 0; font-size: 12px; font-family: "Arrial Narrow";}
+            /** Define the margins of your page **/
+            @page {
+                margin: 100px 55px;
+            }
+
+            header {
+                position: fixed;
+                top: -45px;
+                left: 0px;
+                right: 0px;
+                height: 50px;
+                /** Extra personal styles **/
+
+                color: white;
+                text-align: center;
+                line-height: 35px;
+            }
+
+            footer {
+                position: fixed;
+                bottom: 55px;
+                left: 0px;
+                right: 0px;
+                height: 90px;
+                font-size: 50pt; 
+                font-family: "Arrial Narrow";
+
+                text-align: center;
+            }
+
+            table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Define header and footer blocks before your content -->
+        <header>
+          <div class="row justify-content-center">
+            <div class="col-md-12">
+              <table class="table">
+                <tr><td width="25%"></td>
+                <td valign="middle" width="45%"><b><font size="7"></font></b><br/>
+                  Phone : 01313-772676<br/>
+                  Email: jistlifecare@gmail.com</td>
+                <td valign="middle" width="20%"><b><font size="6">INVOICE</font></b></td></tr>
+              </table>
+            </div>
+          </div>
+        </header>
+
+        <footer>
+          <div class="row">
+            <div class="col-sm-12">
+              <table border="0" cellspacing="0" cellpadding="0">
+                  <tr>
+                      <td style="text-align:center">Signatue of Customer</td>
+                      <td>&nbsp;</td>
+                      <td style="text-align:center">Signatue of Authority</td>
+                  </tr>
+                  <tr>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td height="40%">&nbsp;</td>
+                  </tr>
+                   
+                  <tr>
+                      <td colspan="3">
+                          <font size="3"></font>Please quote Invoice no. when paying. All amounts stated in - BDT <br/>
+                          Bank: Dutch Bangla Bank Limited, A/C No: 117-110-29403, Branch-Uttara, Dhaka <br/>
+                          Bank: MBL, Account Name-Jist Life Care, A/C No: 1314 775-29329853, Branch-Asad Gate, Dhaka<br/>
+                          Bank: MBL, Account Name-Jist Life Care, A/C No: 1314 111-25542293, Branch-Asad Gate, Dhaka<br/>
+                          bKash: 01678 420 144<br/>
+                          Hotline: 01737 571 070, 01744 948 359</font></td>
+                  </tr>
+              </table>
+            </div>
+          </div>
+        </footer>
+        <!-- Wrap the content of your PDF inside a main tag -->
+        <main>
+            <p><br/><br/>
+              <div class="row justify-content-center">
+                <div class="col-md-12">
+                <table class="table table-bordered"> 
+                  <tr>
+                    <td width="70%"><dl id="dt-list-1" class="dl-horizontal">
+                        <dt><b>Invoice Date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</b>&nbsp;{{ $rows_m->inv_date }}</dt>
+                        <dt><b>Customer Name&nbsp;&nbsp;&nbsp;:</b>&nbsp;{{ $rows_m->cust_name }}</dt>
+                        <dt><b>Customer Phone&nbsp;&nbsp;:</b>&nbsp;{{ $rows_m->cust_mobile }}</dt>
+                        <dt><b>Address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</b>&nbsp;{{ $rows_m->cust_add1 }} {{ $rows_m->cust_add2 }}</dt>
+                      </dl></td>
+                    <td width="30%" valign="top"><dl id="dt-list-1" class="dl-horizontal">
+                      <dt><b>Invoice No&nbsp;&nbsp;:</b>&nbsp;{{ $rows_m->inv_no }}</dt>
+                      <!--dt><b>Sales Person:</b>&nbsp;{{ $rows_m->sales_name }}</dt -->
+                      <!-- dt><b>Total Bill:</b>&nbsp;{{ $rows_m->inv_sub_total }}</dt>
+                      <dt><b>Total Discount:</b>&nbsp;{{ $rows_m->inv_disc_value }}</dt>
+                      <dt><b>Total VAT:</b>&nbsp;{{ $rows_m->inv_vat_value }}</dt>
+                      <dt><b>Net Total:</b>&nbsp;{{ $rows_m->inv_net_amt }}</dt -->
+
+                    </dl></td>
+                  </tr>
+                </table>
+                </div>
+            </div>
+            <br/>
+            <div class="container">
+              <div class="row justify-content-center">
+                <div class="row">
+                  <div class="col-sm-12">
+                    <table width="100%" border="1" cellspacing="1" cellpadding="1">
+                      <thead>
+                        <tr>
+                          <th width="3%">SL</th>
+                          <!--th width="5%">Code</th -->
+                          <th width="32%">Item&nbsp;Name</th>
+                          <th width="8%">Price</th>
+                          <th width="5%">Qty</th>
+                          <th width="5%">Unit</th>
+                          <th width="10%">Total</th>
+                          <th width="5%">Disc</th>
+                          <th width="12%">Disc.&nbsp;Value</th>
+                          <th width="15%">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <?php $i=0; $tot_qty = 0; $total = 0;$s_inv_itm_disc = 0;?>
+                          @foreach($rows_d as $sale_details)
+                          <?php
+
+                          $sub_total = $sale_details->inv_item_price*$sale_details->inv_qty;
+                          $inv_itm_disc = ($sub_total*$sale_details->inv_itm_disc_per)/100;
+                          $s_total = $sub_total - $inv_itm_disc;
+                          $total += $s_total;
+                          $s_inv_itm_disc += $inv_itm_disc;
+
+                          $tot_qty  += $sale_details->inv_qty;
+
+                          ?>
+                          <tr>
+                            <td align="center">{{ ++$i }}</td>
+                            <!--td>{{ $sale_details->item_code }}</td -->
+                            <td>{{ $sale_details->item_name }}</td>
+                            <td align="center">{{ $sale_details->inv_item_price }}</td>
+                            <td align="center">{{ $sale_details->inv_qty }}</td>
+                            <td align="center">{{ $sale_details->inv_unit }}</td>
+                            <td align="right">{{ number_format($sub_total, 2) }}</td>
+                            <td align="center">{{ number_format($sale_details->inv_itm_disc_per, 2) }}</td>
+                            <td align="right">{{ number_format($inv_itm_disc, 2) }}</td>
+                            <td align="right">{{ number_format($s_total, 2) }}</td>
+                          </tr>
+                        @endforeach
+                        <?php
+
+                        $Total_Disc = $s_inv_itm_disc + $rows_m->inv_disc_value;
+                        $VAT = $rows_m->inv_vat_value;
+                        $NET_AMT = $total - $Total_Disc + $VAT;
+                        ?>
+                        <tr>
+                          <td colspan="3" align="center"><b>Total Qty:</b></td>
+                          <td align="center"><b>{{ number_format($tot_qty, 2) }}</b></td>
+                          <td colspan="4" align="right"><b>Sub Total:</b></td>
+                          <td align="right"><b>{{ number_format($total , 2) }}</b></td>
+                        </tr>
+                        <tr>
+                          <td colspan="8" align="right"><b>Total Disc:</b></td>
+                          <td align="right"><b>{{ number_format($Total_Disc, 2) }}</b></td>
+                        </tr>
+                        <tr>
+                          <td colspan="8" align="right"><b>VAT:</b></td>
+                          <td align="right"><b>{{ number_format($VAT , 2) }}</b></td>
+                        </tr>
+                        <tr>
+                          <td colspan="8" align="right"><b>Net Amount:</b></td>
+                          <td align="right"><b>{{ number_format($NET_AMT , 2) }}</b></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    </div>
+                    </div>
+                    
+                    <div class="row">
+                      <div class="col-sm-12">
+                        Inwords(Taka): {{$inWordAmount}}
+                      </div>
+                   </div>
+                   
+                </div>
+            </div>
+            </p>
+        </main>
+    </body>
+</html>

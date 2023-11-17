@@ -1,0 +1,157 @@
+.form-control{
+    box-shadow: none;
+    font-size: 12px;
+}
+.form-control:focus {
+    border-color: #F00;
+    outline: 0;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+.alert{
+    padding: 8px;
+    margin-bottom: 0;
+    border-radius: 0;
+}
+.btn{
+    font-size: 12px;
+    /* padding: 3px 10px; */
+}
+.btn.focus, .btn:focus{
+    box-shadow: none;
+}
+.btn-light{
+    color: #333;
+    border-color: #CCC;
+    background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #FFFFFF),color-stop(100%, #E0E0E0));
+    background: -webkit-linear-gradient(#FFFFFF,#E0E0E0);
+    background: -webkit-linear-gradient(#FFFFFF, #E0E0E0);
+    background: linear-gradient(#FFFFFF,#E0E0E0);
+}
+.btn-light:hover,.btn-light:focus, .btn-light:active, .btn-light:active:hover,.btn-light:hover:active{
+    border-color: #adadad;
+}
+.btn-light:not([disabled]):not(.disabled).active, .btn-light:not([disabled]):not(.disabled):active, .show>.btn-light.dropdown-toggle{
+    box-shadow: none;
+}
+.btn-danger{
+    color: #c9302c;
+    border-color: #ccc;
+    background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #FFFFFF),color-stop(100%, #E0E0E0));
+    background: -webkit-linear-gradient(#FFFFFF,#E0E0E0);
+    background: -webkit-linear-gradient(#FFFFFF, #E0E0E0);
+    background: linear-gradient(#FFFFFF,#E0E0E0);
+}
+.btn-danger:hover,.btn-danger:focus, .btn-danger:active, .btn-danger:active:hover,.btn-danger:hover:active{
+    color: #b22b27;
+    border-color: #adadad;
+    background-color: #dae0e5;
+}
+.btn-danger:not([disabled]):not(.disabled).active, .btn-danger:not([disabled]):not(.disabled):active, .show>.btn-danger.dropdown-toggle{
+    color: #b22b27;
+    border-color: #adadad;
+    box-shadow:none;
+    background-color: #dae0e5;
+}
+.btn-group-xs>.btn, .btn-xs{
+    padding: 2px 8px;
+}
+.form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control{
+    background-color: #f9f9f9;
+}
+.input-group-text{
+    text-align: right;
+    font-size: 12px;
+}
+select.form-control:not([size]):not([multiple]){
+    height:32px;
+}
+a:hover{
+    text-decoration:none;
+}
+.card-header{
+    background-color: transparent;
+}
+.card{
+    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+}
+.navbar-brand{
+    font-weight: 700;
+    font-size: 14px;
+    text-transform:uppercase;
+}
+/* Flat */
+.modal-content,
+.img-thumbnail,
+.btn,
+.btn-group .dropdown-menu,
+.table-bordered,
+.table-bordered tr:first-child th:first-child,
+.table-bordered tr:first-child th:last-child,
+.table-bordered tr:last-child td:first-child,
+.table-bordered tr:last-child td:last-child,
+.input-group .dropdown-menu,
+.input-group .form-control,
+/*.input-group .input-group-text,*/
+.dropdown-menu,
+.dropdown-menu .dropdown-submenu .dropdown-menu,
+.form .form-control,
+.form .btn,
+.form-control,
+.label,
+.badge,
+.alert .btn,
+.progress,
+.breadcrumb,
+.tooltip .tooltip-inner,
+.popover,
+.nav-list-panel,
+/*.nav-tabs li > a,*/
+.tab-below .nav-tabs li > a,
+.tab-right .nav-tabs li > a,
+.tab-left .nav-tabs li > a,
+.nav-tabs .dropdown-menu,
+.tab-below .nav-tabs .dropdown-menu,
+.nav-pills li a,
+.nav-pills .dropdown-menu,
+.navbar .dropdown-menu,
+.pagination,
+.pagination li:first-child a,
+.pagination li:first-child span,
+.pagination li:last-child a, 
+.pagination li:last-child span,
+.pager li a,
+.pager li a:hover,
+.pager li a:focus,
+.breadcrumb-arrow li:first-child a {
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+/*
+.btn-group .btn:first-child:not(:last-child),
+
+.btn-group>.btn:last-child:not(:first-child), .btn-group>.dropdown-toggle:not(:first-child){
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+*/
+.table-borderless>tbody>tr>td, .table-borderless>tbody>tr>th, .table-borderless>tfoot>tr>td, .table-borderless>tfoot>tr>th, .table-borderless>thead>tr>td, .table-borderless>thead>tr>th{
+    border-top:none;
+}
+.input-group .form-control{
+    z-index:0;
+}
+/* modal size revise */
+@media (min-width: 768px){
+    .modal-dialog {
+        width: 800px;
+        margin: 30px auto;
+    }
+    .modal-sm {
+        width: 600px;
+    }
+    .modal-xs {
+        width: 300px;
+    }
+}
